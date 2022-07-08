@@ -13,14 +13,9 @@ app.use(express.json())
 // app.use(express.urlencoded({ extended: true }))
 app.use(express.urlencoded({ extended: true }));
 
-// post:オウム返し
-app.post('/api/post', (req, res) => {
-  res.send(req.body)
-});
-
-app.get('/select', select);
-app.post('/insert', insert);
-app.post('/test', (req, res) => res.send(req.body))
+// app.post('/test', (req, res) => res.send(req.body))
+app.get('/select', select);  // index.vue
+app.post('/insert', insert); // upload.vue
 
 
 export default app
