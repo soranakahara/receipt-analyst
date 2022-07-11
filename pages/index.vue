@@ -6,8 +6,8 @@
         <template slot="header">
           <div class="row">
             <div class="col-sm-6" :class="isRTL ? 'text-right' : 'text-left'">
-              <h5 class="card-category">Total shipments</h5>
-              <h2 class="card-title">Performance</h2>
+              <h5 class="card-category">Food Costs</h5>
+              <h2 class="card-title">{{ mainChartCategories[blueBarChart.activeIndex].name }} Performance</h2>
             </div>
             <div class="col-sm-6 d-flex d-sm-block">
               <div
@@ -251,16 +251,16 @@ let bigChartDatasetOptions = {
   pointRadius: 4,
 }
 
-let mainChartData = [
-  [100, 70, 90, 70, 85, 60, 75, 60, 90, 80, 110, 100, 100, 70, 90, 70, 85, 60, 75, 60, 90, 80, 110, 100, 100, 70, 90, 70, 85, 60, 75],
-  [80, 120, 105, 110, 95],
-  [60, 80, 65, 130, 80, 105, 90, 130, 70, 115, 60, 130]
-]
-let mainChartLabels = [
-  ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31'],
-  ['1-7', '8-14', '15-21', '22-28', '29-31'],
-  ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
-]
+// let mainChartData = [
+//   [100, 70, 90, 70, 85, 60, 75, 60, 90, 80, 110, 100, 100, 70, 90, 70, 85, 60, 75, 60, 90, 80, 110, 100, 100, 70, 90, 70, 85, 60, 75],
+//   [80, 120, 105, 110, 95],
+//   [60, 80, 65, 130, 80, 105, 90, 130, 70, 115, 60, 130]
+// ]
+// let mainChartLabels = [
+//   ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31'],
+//   ['1-7', '8-14', '15-21', '22-28', '29-31'],
+//   ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
+// ]
 let mainChartDatasetOptions = {
   fill: true,
   borderColor: config.colors.info,
@@ -292,6 +292,16 @@ export default {
           subtotal: 120
         }]
       },
+      mainChartData: [
+        [100, 70, 90, 70, 85, 60, 75, 60, 90, 80, 110, 100, 100, 70, 90, 70, 85, 60, 75, 60, 90, 80, 110, 100, 100, 70, 90, 70, 85, 60, 75],
+        [80, 120, 105, 110, 95],
+        [60, 80, 65, 130, 80, 105, 90, 130, 70, 115, 60, 130]
+      ],
+      mainChartLabels: [
+        ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31'],
+        ['1-7', '8-14', '15-21', '22-28', '29-31'],
+        ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
+      ],
       tableData: [
         {
           id: 1,
@@ -398,20 +408,6 @@ export default {
           'rgba(66,134,121,0)'
         ],
         gradientStops: [1, 0.4, 0]
-      },
-      blueBarChart: {
-        activeIndex: 0,
-        chartData: {
-          datasets: [{
-              ...mainChartDatasetOptions,
-              // label: 'FoodCosts',
-              data: mainChartData[0]
-            }],
-          labels: mainChartLabels,
-        },
-        extraOptions: chartConfigs.barChartOptions,
-        gradientStops: [1, 0.4, 0],
-        categories: [],
       }
     };
   },
@@ -419,6 +415,21 @@ export default {
     // details () {
     //   return this.receipt.details; // v-forの属性でプロパティを指定して使いけど書き方がわからないのでわざわざcomputedに
     // },
+    blueBarChart () {
+      return {
+        activeIndex: 0,
+        chartData: {
+          datasets: [{
+              ...mainChartDatasetOptions,
+              data: this.mainChartData[0]
+            }],
+          labels: this.mainChartLabels[0],
+        },
+        extraOptions: chartConfigs.barChartOptions,
+        gradientStops: [1, 0.4, 0],
+        categories: [],
+      }
+    },
     total_price () {
       let res = 0;
       let list = this.receipt.details;
@@ -467,18 +478,23 @@ export default {
     },
     async initMainChart (index) {
       this.loaded = false;
-      this.mainChartData = await this.$axios.get('/select').then(res=>{
-        this.loaded = true;
-        return res;
+      await this.$axios.get('/select').then(res=>{
+        // console.log("res: " + JSON.stringify(res));
+        this.mainChartData = res.data.eachTotal;
+        this.mainChartLabels = res.data.eachLabel;
+        return;
       })
+      this.loaded = true;
       let cData = {
         datasets: [{
           ...mainChartDatasetOptions,
-          data: mainChartData[index]
+          data: this.mainChartData[index]
         }],
-        labels: mainChartLabels[index]
+        labels: this.mainChartLabels[index]
       };
-      this.$refs.mainChart.updateGradients(cData); // ref="mainChart"で定義したコンポーネントを触れる
+      // console.log(this.$refs.mainChart);
+      
+      // this.$refs.mainChart.updateGradients(cData); // ref="mainChart"で定義したコンポーネントを触れる
       this.blueBarChart.chartData = cData;
       this.blueBarChart.activeIndex = index;
     }
